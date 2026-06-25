@@ -17,7 +17,7 @@ def register_view(request):
             return redirect("home")
     else:
         form = UserCreationForm()
-    return render(request, "registation/register.html", {"form": form})
+    return render(request, "registration/register.html", {"form": form})
 
 
 def login_view(request):
@@ -39,4 +39,4 @@ def logout_view(request):
 
 @login_required
 def home_view(request):
-    return render(request, "duel/home.html")
+    return render(request, "skillduel/home.html")
