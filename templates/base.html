@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Skill Duel{% endblock %}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&family=Inter:wght@100..900&family=Geist:wght@100..900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4cd7f6;
+            --primary-dim: rgba(76, 215, 246, 0.15);
+            --primary-border: rgba(76, 215, 246, 0.3);
+            --secondary: #ddb7ff;
+            --secondary-dim: rgba(221, 183, 255, 0.15);
+            --secondary-border: rgba(221, 183, 255, 0.3);
+            --error: #ffb4ab;
+            --error-dim: rgba(255, 180, 171, 0.15);
+            --error-border: rgba(255, 180, 171, 0.3);
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-hover: rgba(255, 255, 255, 0.06);
+            --surface-container: #171f33;
+            --surface-container-high: #222a3d;
+            --surface-container-highest: #2d3449;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+            --text-primary: #dae2fd;
+            --text-muted: rgba(188, 201, 205, 0.7);
+            --text-dim: rgba(188, 201, 205, 0.5);
+            --outline-variant: #3d494c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0b1326;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* ── Glass card ───────────────────────────── */
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* ── Top nav ──────────────────────────────── */
+        .sd-nav {
+            background: rgba(11, 19, 38, 0.8);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 0 1.5rem;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sd-brand {
+            font-family: 'Sora', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sd-brand .ti {
+            font-size: 20px;
+            -webkit-text-fill-color: var(--primary);
+        }
+
+        /* ── Buttons ──────────────────────────────── */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #6f00be 100%);
+            border: none;
+            color: #fff;
+            font-family: 'Geist', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.05em;
+            padding: 9px 22px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: filter 0.15s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.15);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: 'Geist', sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            padding: 6px 14px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+            text-decoration: none;
+        }
+
+        .btn-ghost:hover {
+            background: var(--surface-hover);
+            color: var(--text-primary);
+            border-color: var(--primary-border);
+        }
+
+        /* ── Cards ────────────────────────────────── */
+        .sd-card {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+        }
+
+        /* ── Form elements ────────────────────────── */
+        .sd-input,
+        .sd-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 9px 12px;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        .sd-input:focus,
+        .sd-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--primary-dim);
+        }
+
+        .sd-label {
+            font-family: 'Geist', sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* ── Badges ───────────────────────────────── */
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-size: 11px;
+            font-family: 'Geist', sans-serif;
+            letter-spacing: 0.05em;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-active {
+            background: rgba(76, 215, 246, 0.15);
+            color: var(--primary);
+            border: 1px solid var(--primary-border);
+            font-size: 11px;
+            font-family: 'Geist', sans-serif;
+            letter-spacing: 0.05em;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-done {
+            background: var(--surface);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            font-family: 'Geist', sans-serif;
+            letter-spacing: 0.05em;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        /* ── Rank badges ──────────────────────────── */
+        .rank-badge {
+            font-size: 11px;
+            font-family: 'Geist', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .rank-bronze {
+            background: rgba(180, 120, 60, 0.2);
+            color: #cd8a4e;
+        }
+
+        .rank-silver {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+
+        .rank-gold {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .rank-platinum {
+            background: var(--secondary-dim);
+            color: var(--secondary);
+        }
+
+        .rank-diamond {
+            background: var(--primary-dim);
+            color: var(--primary);
+        }
+
+        .rank-legend {
+            background: var(--error-dim);
+            color: var(--error);
+        }
+
+        /* ── Alerts ───────────────────────────────── */
+        .sd-alert-error {
+            background: var(--error-dim);
+            border: 1px solid var(--error-border);
+            border-radius: 8px;
+            color: var(--error);
+            padding: 10px 14px;
+            font-size: 13px;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Section label ────────────────────────── */
+        .section-label {
+            font-family: 'Geist', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        /* ── Stat pill (XP / tokens in nav) ──────── */
+        .stat-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-container-high);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 5px 14px;
+        }
+
+        .stat-pill .divider {
+            width: 1px;
+            height: 14px;
+            background: var(--border);
+        }
+
+        .stat-pill .val {
+            font-family: 'Geist', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Glow pulse ───────────────────────────── */
+        @keyframes pulse-glow {
+            0% {
+                opacity: 0.6;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .cyber-pulse {
+            animation: pulse-glow 2s infinite alternate;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <nav class="sd-nav">
+        <a href="/" class="sd-brand">
+            <i class="ti ti-sword"></i> SKILL DUEL
+        </a>
+
+        <div style="display:flex; align-items:center; gap:10px;">
+            {% if request.user.is_authenticated %}
+
+            <!-- XP / token stats (visible md+) -->
+            <div class="stat-pill" style="display:none;" id="stat-pill-nav">
+                <span class="val" style="color:var(--primary);">{{ request.user.profile.xp|default:"0" }} XP</span>
+                <span class="divider"></span>
+                <span class="val" style="color:var(--secondary);">{{ request.user.profile.tokens|default:"0" }}
+                    Tokens</span>
+            </div>
+
+            <a href="/leaderboard" class="btn-ghost"><i class="ti ti-trophy"></i> Leaderboard</a>
+            <a href="/duel/create" class="btn-ghost"><i class="ti ti-sword"></i> New duel</a>
+            <span style="font-size:12px; color:var(--text-dim); padding:0 4px;">{{ request.user.username }}</span>
+            <a href="/logout" class="btn-ghost"><i class="ti ti-logout"></i> Logout</a>
+
+            {% else %}
+
+            <a href="/login" class="btn-ghost">Login</a>
+            <a href="/register" class="btn-primary"><i class="ti ti-user-plus"></i> Register</a>
+
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        /* Show stat pill only if wide enough */
+        const pill = document.getElementById('stat-pill-nav');
+        if (pill) {
+            const show = () => { pill.style.display = window.innerWidth >= 768 ? 'flex' : 'none'; };
+            show();
+            window.addEventListener('resize', show);
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

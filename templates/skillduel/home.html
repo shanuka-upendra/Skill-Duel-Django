@@ -1,25 +1,68 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+{% block title %}Home — Skill Duel{% endblock %}
 
-<head>
-    <title>Home — Skill Duel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+{% block content %}
+<div style="max-width:680px; margin:0 auto; padding:3rem 1.5rem;">
 
-<body class="bg-dark text-white">
-    <nav class="navbar navbar-dark bg-black px-4">
-        <span class="navbar-brand fw-bold">⚔️ Skill Duel</span>
-        <div>
-            <span class="text-secondary me-3">{{ request.user.username }}</span>
-            <a href="/logout" class="btn btn-outline-warning btn-sm">Logout</a>
-        </div>
-    </nav>
-
-    <div class="container mt-5 text-center">
-        <h1 class="display-5 fw-bold">Welcome, {{ request.user.username }}! ⚔️</h1>
-        <p class="text-secondary">Ready to prove your skills?</p>
-        <a href="#" class="btn btn-warning btn-lg mt-3 fw-bold">Start a Duel</a>
+    <div style="text-align:center; margin-bottom:2.5rem;">
+            <h1 style="font-size:28px; font-weight:500; color:#fff; margin-bottom:8px;">
+                Welcome back, <span style="color:var(--amber);">{{ request.user.username }}</span>
+            </h1>
+            <p style="font-size:13px; color:var(--text-muted);">Challenge someone. Prove your skills.</p>
+            {% if request.user.profile %}
+            <div style="display:flex; justify-content:center; gap:10px; margin:1rem 0;">
+                <span
+                    style="background:var(--surface); border:0.5px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--text-dim);">
+                    <strong style="color:var(--amber);">{{ request.user.profile.wins }}</strong> wins
+                </span>
+                <span
+                    style="background:var(--surface); border:0.5px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--text-dim);">
+                    <strong style="color:#f87171;">{{ request.user.profile.losses }}</strong> losses
+                </span>
+                <span
+                    style="background:var(--surface); border:0.5px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--text-dim);">
+                    Rank: <strong style="color:var(--amber);">{{ request.user.profile.rank|capfirst }}</strong>
+                </span>
+            </div>
+            {% endif %}
+            <a href="/duel/create" class="btn-amber" style="padding:10px 28px; font-size:14px;">
+                <i class="ti ti-sword"></i> Start a duel
+            </a>
     </div>
-</body>
 
-</html>
+    <div class="section-label">Recent duels</div>
+    <div class="sd-card">
+        {% if recent_duels %}
+        {% for duel in recent_duels %}
+        <a href="/duel/{{ duel.id }}" style="text-decoration:none; color:inherit;">
+            <div
+                style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:0.5px solid var(--border);">
+                <div>
+                    <div style="font-size:13px; color:#e8eaf0;">
+                        <span style="color:var(--amber);">{{ duel.challenger.username }}</span>
+                        <span style="color:var(--text-muted);"> vs </span>
+                        {{ duel.opponent.username }}
+                    </div>
+                    <div style="margin-top:3px;">
+                        <span
+                            style="font-size:11px; padding:2px 8px; border-radius:20px; border:0.5px solid var(--border); color:var(--text-muted);">
+                            {{ duel.category|capfirst }}
+                        </span>
+                    </div>
+                </div>
+                {% if duel.status == 'pending' %}<span class="badge-pending">Pending</span>
+                {% elif duel.status == 'active' %}<span class="badge-active">Active</span>
+                {% else %}<span class="badge-done">Finished</span>{% endif %}
+            </div>
+        </a>
+        {% endfor %}
+        {% else %}
+        <div style="padding:2rem; text-align:center; color:var(--text-muted); font-size:13px;">
+            No duels yet. <a href="/duel/create" style="color:var(--amber); text-decoration:none;">Start your first
+                one</a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

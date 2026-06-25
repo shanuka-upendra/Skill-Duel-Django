@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import UserProfile
+from django.db import models as db_models
+from .models import Duel, UserProfile
 
 # Create your views here.
 
@@ -39,4 +40,7 @@ def logout_view(request):
 
 @login_required
 def home_view(request):
-    return render(request, "skillduel/home.html")
+    recent_duels = Duel.objects.filter(
+        db_models.Q(challenger=request.user) | db_models.Q(opponent=request.user)
+    ).order_by("-created_at")[:5]
+    return render(request, "skillduel/home.html", {"recent_duels": recent_duels})
