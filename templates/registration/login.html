@@ -1,42 +1,116 @@
 {% extends "base.html" %}
 {% block title %}Login — Skill Duel{% endblock %}
 
-{% block content %}
-<div
-    style="min-height:calc(100vh - 56px); display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
-    <div style="width:100%; max-width:400px;">
+{% block extra_css %}
+<style>
+    .auth-wrap {
+        min-height: calc(100vh - 56px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background:
+            radial-gradient(ellipse 60% 40% at 20% 60%, rgba(76, 215, 246, 0.06) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 35% at 80% 30%, rgba(167, 139, 250, 0.06) 0%, transparent 70%);
+    }
 
-        <div style="text-align:center; margin-bottom:2rem;">
-            <div style="font-size:24px; font-weight:500; color:#fff;">Welcome back</div>
-            <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Login to your arena</div>
+    .auth-box {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-title {
+        font-family: 'Sora', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .auth-sub {
+        font-size: 13px;
+        color: var(--text-dim);
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .field-error {
+        font-size: 11px;
+        color: var(--error);
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .auth-footer {
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-dim);
+        margin-top: 1.25rem;
+    }
+
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-box">
+
+        <div class="auth-header">
+            <div class="auth-title">Welcome back</div>
+            <div class="auth-sub">Login to enter the arena</div>
         </div>
 
-        <div class="sd-card" style="padding:1.5rem;">
-            <form method="post">
+        <div class="sd-card" style="padding:1.75rem;">
+            <form method="post" autocomplete="off">
                 {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="sd-alert-error">
+                    <i class="ti ti-alert-circle"></i> {{ form.non_field_errors|join:", " }}
+                </div>
+                {% endif %}
+
                 {% for field in form %}
-                <div style="margin-bottom:14px;">
-                    <label class="sd-label">{{ field.label }}</label>
+                <div class="form-group">
+                    <label class="sd-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     <input class="sd-input" type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}"
-                        id="{{ field.id_for_label }}">
+                        id="{{ field.id_for_label }}" {% if field.value %}value="{{ field.value }}" {% endif %}
+                        autocomplete="off">
                     {% if field.errors %}
-                    <div style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors|join:", " }}</div>
+                    <div class="field-error"><i class="ti ti-circle-x" style="font-size:12px;"></i> {{
+                        field.errors|join:", " }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
-                {% if form.non_field_errors %}
-                <div class="sd-alert-error">{{ form.non_field_errors|join:", " }}</div>
-                {% endif %}
-                <button type="submit" class="btn-amber"
-                    style="width:100%; justify-content:center; padding:10px; margin-top:6px;">
+
+                <button type="submit" class="btn-primary"
+                    style="width:100%; justify-content:center; padding:10px; margin-top:8px; font-size:14px;">
                     Login <i class="ti ti-arrow-right"></i>
                 </button>
             </form>
         </div>
 
-        <p style="text-align:center; font-size:13px; color:var(--text-muted); margin-top:1rem;">
-            No account? <a href="/register" style="color:var(--amber); text-decoration:none;">Register here</a>
-        </p>
+        <div class="auth-footer">
+            No account? <a href="/register">Register here</a>
+        </div>
 
     </div>
 </div>
