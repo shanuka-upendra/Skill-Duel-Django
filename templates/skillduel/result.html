@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Result — Skill Duel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-wrap {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+        text-align: center;
+    }
+
+    .result-icon {
+        font-size: 52px;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .result-title {
+        font-family: 'Sora', sans-serif;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+    }
+
+    .result-title.win {
+        background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .result-title.loss {
+        color: var(--error);
+    }
+
+    .result-title.draw {
+        color: var(--secondary);
+    }
+
+    .result-sub {
+        font-size: 13px;
+        color: var(--text-dim);
+        margin-bottom: 2.5rem;
+    }
+
+    .score-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .score-card {
+        padding: 1.5rem 1rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .score-card.winner-card {
+        border-color: var(--primary-border);
+        background: var(--primary-dim);
+    }
+
+    .score-name {
+        font-family: 'Geist', sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+    }
+
+    .score-num {
+        font-family: 'Sora', sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+    }
+
+    .score-num .denom {
+        font-size: 16px;
+        color: var(--text-dim);
+        font-weight: 400;
+    }
+
+    .score-card.winner-card .score-num {
+        background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .winner-crown {
+        font-size: 11px;
+        color: var(--primary);
+        font-family: 'Geist', sans-serif;
+        letter-spacing: 0.05em;
+        margin-top: 6px;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="result-wrap">
+
+    {% if duel.winner %}
+    {% if duel.winner == request.user %}
+    <i class="ti ti-trophy result-icon" style="color:var(--primary);"></i>
+    <div class="result-title win">You won!</div>
+    <div class="result-sub">+1 win added to your profile</div>
+    {% else %}
+    <i class="ti ti-mood-sad result-icon" style="color:var(--error);"></i>
+    <div class="result-title loss">You lost</div>
+    <div class="result-sub">{{ duel.winner.username }} takes this one — rematch?</div>
+    {% endif %}
+    {% else %}
+    <i class="ti ti-handshake result-icon" style="color:var(--secondary);"></i>
+    <div class="result-title draw">It's a draw!</div>
+    <div class="result-sub">Perfectly matched opponents</div>
+    {% endif %}
+
+    <div class="score-grid">
+        <div class="sd-card score-card {% if duel.winner == duel.challenger %}winner-card{% endif %}">
+            <div class="score-name">{{ duel.challenger.username }}</div>
+            <div class="score-num">{{ c_score }}<span class="denom">/5</span></div>
+            {% if duel.winner == duel.challenger %}
+            <div class="winner-crown"><i class="ti ti-crown" style="font-size:11px;"></i> Winner</div>
+            {% endif %}
+        </div>
+        <div class="sd-card score-card {% if duel.winner == duel.opponent %}winner-card{% endif %}">
+            <div class="score-name">{{ duel.opponent.username }}</div>
+            <div class="score-num">{{ o_score }}<span class="denom">/5</span></div>
+            {% if duel.winner == duel.opponent %}
+            <div class="winner-crown"><i class="ti ti-crown" style="font-size:11px;"></i> Winner</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="action-row">
+        <a href="/skillduel/create" class="btn-primary"><i class="ti ti-sword"></i> New duel</a>
+        <a href="/skillduel/leaderboard" class="btn-ghost"><i class="ti ti-trophy"></i> Leaderboard</a>
+    </div>
+
+</div>
+{% endblock %}

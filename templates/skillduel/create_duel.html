@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}New Duel — Skill Duel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-wrap {
+        min-height: calc(100vh - 56px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background:
+            radial-gradient(ellipse 60% 40% at 30% 70%, rgba(76, 215, 246, 0.05) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 35% at 70% 20%, rgba(167, 139, 250, 0.05) 0%, transparent 70%);
+    }
+
+    .create-box {
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .page-title {
+        font-family: 'Sora', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+        margin-bottom: 6px;
+    }
+
+    .page-sub {
+        font-size: 13px;
+        color: var(--text-dim);
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .cat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .cat-option {
+        padding: 16px 14px;
+        text-align: center;
+        cursor: pointer;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        transition: border-color 0.15s, background 0.15s;
+    }
+
+    .cat-option.selected {
+        border-color: var(--primary);
+        background: var(--primary-dim);
+    }
+
+    .cat-option .cat-icon {
+        font-size: 24px;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+        display: block;
+        transition: color 0.15s;
+    }
+
+    .cat-option.selected .cat-icon {
+        color: var(--primary);
+    }
+
+    .cat-option .cat-name {
+        font-family: 'Geist', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .cat-option .cat-desc {
+        font-size: 11px;
+        color: var(--text-dim);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-wrap">
+    <div class="create-box">
+
+        <div class="page-title">Challenge someone</div>
+        <div class="page-sub">Pick your opponent and prove your skills</div>
+
+        {% if error %}
+        <div class="sd-alert-error"><i class="ti ti-alert-circle"></i> {{ error }}</div>
+        {% endif %}
+
+        <div class="sd-card" style="padding:1.75rem;">
+            <form method="post" id="duel-form">
+                {% csrf_token %}
+
+                <div style="margin-bottom:20px;">
+                    <label class="sd-label">Choose opponent</label>
+                    <select name="opponent" class="sd-select">
+                        {% for u in users %}
+                        <option value="{{ u.id }}">{{ u.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="margin-bottom:24px;">
+                    <label class="sd-label">Choose category</label>
+                    <div class="cat-grid">
+                        <label>
+                            <input type="radio" name="category" value="coding" style="display:none;" class="cat-radio">
+                            <div class="cat-option selected" data-val="coding">
+                                <i class="ti ti-code cat-icon"></i>
+                                <div class="cat-name">Coding</div>
+                                <div class="cat-desc">Python · Logic · DSA</div>
+                            </div>
+                        </label>
+                        <label>
+                            <input type="radio" name="category" value="math" style="display:none;" class="cat-radio">
+                            <div class="cat-option" data-val="math">
+                                <i class="ti ti-math cat-icon"></i>
+                                <div class="cat-name">Math & Logic</div>
+                                <div class="cat-desc">Algebra · Puzzles</div>
+                            </div>
+                        </label>
+                    </div>
+                    <input type="hidden" name="category" id="category-hidden" value="coding">
+                </div>
+
+                <button type="submit" class="btn-primary"
+                    style="width:100%; justify-content:center; padding:11px; font-size:14px;">
+                    Send challenge <i class="ti ti-sword"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const options = document.querySelectorAll('.cat-option');
+    const radios = document.querySelectorAll('.cat-radio');
+    const hidden = document.getElementById('category-hidden');
+    radios[0].checked = true;
+
+    options.forEach((opt, i) => {
+        opt.addEventListener('click', () => {
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            radios[i].checked = true;
+            hidden.value = radios[i].value;
+        });
+    });
+</script>
+{% endblock %}
