@@ -1,40 +1,115 @@
 {% extends "base.html" %}
 {% block title %}Register — Skill Duel{% endblock %}
 
+{% block extra_css %}
+<style>
+    .auth-wrap {
+        min-height: calc(100vh - 56px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background:
+            radial-gradient(ellipse 60% 40% at 80% 60%, rgba(76, 215, 246, 0.06) 0%, transparent 70%),
+            radial-gradient(ellipse 50% 35% at 20% 30%, rgba(167, 139, 250, 0.06) 0%, transparent 70%);
+    }
+
+    .auth-box {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .auth-title {
+        font-family: 'Sora', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+        text-align: center;
+    }
+
+    .auth-sub {
+        font-size: 13px;
+        color: var(--text-dim);
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .field-error {
+        font-size: 11px;
+        color: var(--error);
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .field-hint {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 4px;
+    }
+
+    .auth-footer {
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-dim);
+        margin-top: 1.25rem;
+    }
+
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div
-    style="min-height:calc(100vh - 56px); display:flex; align-items:center; justify-content:center; padding:2rem 1rem;">
-    <div style="width:100%; max-width:400px;">
+<div class="auth-wrap">
+    <div class="auth-box">
 
-        <div style="text-align:center; margin-bottom:2rem;">
-            <div style="font-size:24px; font-weight:500; color:#fff;">Create account</div>
-            <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Join the arena. Prove your skills.
-            </div>
-        </div>
+        <div class="auth-title">Create account</div>
+        <div class="auth-sub">Join the arena. Prove your skills.</div>
 
-        <div class="sd-card" style="padding:1.5rem;">
-            <form method="post">
+        <div class="sd-card" style="padding:1.75rem;">
+            <form method="post" autocomplete="off">
                 {% csrf_token %}
+
                 {% for field in form %}
-                <div style="margin-bottom:14px;">
-                    <label class="sd-label">{{ field.label }}</label>
+                <div class="form-group">
+                    <label class="sd-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     <input class="sd-input" type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}"
-                        id="{{ field.id_for_label }}" {% if field.value %}value="{{ field.value }}" {% endif %}>
+                        id="{{ field.id_for_label }}" {% if field.value %}value="{{ field.value }}" {% endif %}
+                        autocomplete="new-password">
+                    {% if field.help_text %}
+                    <div class="field-hint">{{ field.help_text }}</div>
+                    {% endif %}
                     {% if field.errors %}
-                    <div style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors|join:", " }}</div>
+                    <div class="field-error"><i class="ti ti-circle-x" style="font-size:12px;"></i> {{
+                        field.errors|join:", " }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
-                <button type="submit" class="btn-amber"
-                    style="width:100%; justify-content:center; padding:10px; margin-top:6px;">
+
+                <button type="submit" class="btn-primary"
+                    style="width:100%; justify-content:center; padding:10px; margin-top:8px; font-size:14px;">
                     Create account <i class="ti ti-arrow-right"></i>
                 </button>
             </form>
         </div>
 
-        <p style="text-align:center; font-size:13px; color:var(--text-muted); margin-top:1rem;">
-            Already have an account? <a href="/login" style="color:var(--amber); text-decoration:none;">Login</a>
-        </p>
+        <div class="auth-footer">
+            Already have an account? <a href="/login">Login</a>
+        </div>
 
     </div>
 </div>

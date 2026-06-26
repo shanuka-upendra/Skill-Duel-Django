@@ -1,65 +1,191 @@
 {% extends "base.html" %}
 {% block title %}Home — Skill Duel{% endblock %}
 
-{% block content %}
-<div style="max-width:680px; margin:0 auto; padding:3rem 1.5rem;">
+{% block extra_css %}
+<style>
+    .home-wrap {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+    }
 
-    <div style="text-align:center; margin-bottom:2.5rem;">
-            <h1 style="font-size:28px; font-weight:500; color:#fff; margin-bottom:8px;">
-                Welcome back, <span style="color:var(--amber);">{{ request.user.username }}</span>
-            </h1>
-            <p style="font-size:13px; color:var(--text-muted);">Challenge someone. Prove your skills.</p>
-            {% if request.user.profile %}
-            <div style="display:flex; justify-content:center; gap:10px; margin:1rem 0;">
-                <span
-                    style="background:var(--surface); border:0.5px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--text-dim);">
-                    <strong style="color:var(--amber);">{{ request.user.profile.wins }}</strong> wins
-                </span>
-                <span
-                    style="background:var(--surface); border:0.5px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--text-dim);">
-                    <strong style="color:#f87171;">{{ request.user.profile.losses }}</strong> losses
-                </span>
-                <span
-                    style="background:var(--surface); border:0.5px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--text-dim);">
-                    Rank: <strong style="color:var(--amber);">{{ request.user.profile.rank|capfirst }}</strong>
-                </span>
-            </div>
-            {% endif %}
-            <a href="/duel/create" class="btn-amber" style="padding:10px 28px; font-size:14px;">
-                <i class="ti ti-sword"></i> Start a duel
-            </a>
+    .hero {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2.5rem 1rem;
+        background:
+            radial-gradient(ellipse 70% 50% at 50% 0%, rgba(76, 215, 246, 0.08) 0%, transparent 70%);
+        border-radius: 16px;
+        border: 1px solid var(--border-subtle);
+    }
+
+    .hero-title {
+        font-family: 'Sora', sans-serif;
+        font-size: 30px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-title .accent {
+        background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-sub {
+        font-size: 14px;
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+    }
+
+    .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 1.75rem;
+    }
+
+    .stat-chip {
+        background: var(--surface-container);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 5px 16px;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: 'Geist', sans-serif;
+        letter-spacing: 0.03em;
+    }
+
+    .stat-chip strong {
+        color: var(--primary);
+    }
+
+    .stat-chip.loss strong {
+        color: var(--error);
+    }
+
+    .stat-chip.rank strong {
+        color: var(--secondary);
+    }
+
+    .duel-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 18px;
+        border-bottom: 1px solid var(--border-subtle);
+        transition: background 0.15s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .duel-item:last-child {
+        border-bottom: none;
+    }
+
+    .duel-item:hover {
+        background: var(--surface-hover);
+    }
+
+    .duel-players {
+        font-size: 13px;
+        color: var(--text-primary);
+    }
+
+    .duel-players .you {
+        color: var(--primary);
+        font-weight: 500;
+    }
+
+    .duel-players .vs {
+        color: var(--text-dim);
+        margin: 0 5px;
+    }
+
+    .duel-meta {
+        margin-top: 3px;
+    }
+
+    .duel-cat {
+        font-size: 11px;
+        font-family: 'Geist', sans-serif;
+        letter-spacing: 0.04em;
+        padding: 2px 9px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 13px;
+    }
+
+    .empty-state a {
+        color: var(--primary);
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-wrap">
+
+    <div class="hero">
+        <h1 class="hero-title">
+            Welcome back, <span class="accent">{{ request.user.username }}</span>
+        </h1>
+        <p class="hero-sub">Challenge someone. Prove your skills.</p>
+
+        {% if request.user.profile.wins is not None %}
+        <div class="stats-row">
+            <div class="stat-chip"><strong>{{ profile.wins }}</strong> wins</div>
+            <div class="stat-chip loss"><strong>{{ profile.losses }}</strong> losses</div>
+            <div class="stat-chip rank">Rank: <strong>{{ profile.rank|capfirst }}</strong></div>
+            <div class="stat-chip">Win rate: <strong>{{ profile.win_rate }}%</strong></div>
+        </div>
+        {% endif %}
+
+        <a href="/skillduel/create" class="btn-primary" style="font-size:14px; padding:10px 28px;">
+            <i class="ti ti-sword"></i> Start a duel
+        </a>
     </div>
 
     <div class="section-label">Recent duels</div>
-    <div class="sd-card">
+    <div class="sd-card" style="overflow:hidden;">
         {% if recent_duels %}
         {% for duel in recent_duels %}
-        <a href="/duel/{{ duel.id }}" style="text-decoration:none; color:inherit;">
-            <div
-                style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:0.5px solid var(--border);">
-                <div>
-                    <div style="font-size:13px; color:#e8eaf0;">
-                        <span style="color:var(--amber);">{{ duel.challenger.username }}</span>
-                        <span style="color:var(--text-muted);"> vs </span>
-                        {{ duel.opponent.username }}
-                    </div>
-                    <div style="margin-top:3px;">
-                        <span
-                            style="font-size:11px; padding:2px 8px; border-radius:20px; border:0.5px solid var(--border); color:var(--text-muted);">
-                            {{ duel.category|capfirst }}
-                        </span>
-                    </div>
+        <a href="/skillduel/{{ duel.id }}" class="duel-item">
+            <div>
+                <div class="duel-players">
+                    <span class="you">{{ duel.challenger.username }}</span>
+                    <span class="vs">vs</span>
+                    {{ duel.opponent.username }}
                 </div>
-                {% if duel.status == 'pending' %}<span class="badge-pending">Pending</span>
-                {% elif duel.status == 'active' %}<span class="badge-active">Active</span>
-                {% else %}<span class="badge-done">Finished</span>{% endif %}
+                <div class="duel-meta">
+                    <span class="duel-cat">
+                        {% if duel.category == 'coding' %}<i class="ti ti-code" style="font-size:11px;"></i>{% else %}<i
+                            class="ti ti-math" style="font-size:11px;"></i>{% endif %}
+                        {{ duel.category|capfirst }}
+                    </span>
+                </div>
             </div>
+            {% if duel.status == 'pending' %}<span class="badge-pending">Pending</span>
+            {% elif duel.status == 'active' %}<span class="badge-active">Active</span>
+            {% else %}<span class="badge-done">Finished</span>{% endif %}
         </a>
         {% endfor %}
         {% else %}
-        <div style="padding:2rem; text-align:center; color:var(--text-muted); font-size:13px;">
-            No duels yet. <a href="/duel/create" style="color:var(--amber); text-decoration:none;">Start your first
-                one</a>
+        <div class="empty-state">
+            <i class="ti ti-sword" style="font-size:28px; color:var(--text-dim); display:block; margin-bottom:8px;"></i>
+            No duels yet. <a href="/skillduel/create" class="btn-primary"
+                style="font-size:14px; padding:10px 28px;">Start one now</a>
         </div>
         {% endif %}
     </div>
