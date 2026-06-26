@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Waiting... — Skill Duel{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes dot-pulse {
+
+        0%,
+        100% {
+            opacity: 0.2;
+            transform: scale(0.8);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
+        animation: dot-pulse 1.4s ease-in-out infinite;
+    }
+
+    .dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div
+    style="min-height:calc(100vh - 56px); display:flex; align-items:center; justify-content:center; text-align:center; padding:2rem;">
+    <div>
+        <i class="ti ti-hourglass-high"
+            style="font-size:44px; color:var(--primary); display:block; margin-bottom:1rem;"></i>
+        <div
+            style="font-family:'Sora',sans-serif; font-size:22px; font-weight:700; color:var(--text-primary); margin-bottom:8px;">
+            You finished!</div>
+        <div style="font-size:13px; color:var(--text-dim); margin-bottom:2rem;">Waiting for your opponent to answer...
+        </div>
+        <div style="display:flex; justify-content:center; gap:7px;">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div
+            style="font-size:11px; color:var(--text-dim); margin-top:1.5rem; font-family:'Geist',sans-serif; letter-spacing:0.04em;">
+            Auto-refreshes every 5 seconds
+        </div>
+    </div>
+</div>
+<meta http-equiv="refresh" content="5">
+{% endblock %}

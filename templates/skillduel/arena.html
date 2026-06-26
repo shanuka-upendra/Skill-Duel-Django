@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}Arena — Skill Duel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .arena-wrap {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .arena-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .arena-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .arena-q-count {
+        font-family: 'Geist', sans-serif;
+        font-size: 12px;
+        color: var(--text-dim);
+        letter-spacing: 0.04em;
+    }
+
+    .arena-cat {
+        font-size: 11px;
+        font-family: 'Geist', sans-serif;
+        letter-spacing: 0.05em;
+        padding: 3px 12px;
+        border-radius: 20px;
+        background: var(--primary-dim);
+        color: var(--primary);
+        border: 1px solid var(--primary-border);
+    }
+
+    .progress-track {
+        height: 3px;
+        background: var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary) 0%, #a78bfa 100%);
+        border-radius: 4px;
+        transition: width 0.4s ease;
+    }
+
+    .vs-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--text-dim);
+        font-family: 'Geist', sans-serif;
+    }
+
+    .vs-bar .you {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .vs-bar .opp {
+        color: var(--secondary);
+        font-weight: 600;
+    }
+
+    .question-card {
+        padding: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .question-tag {
+        font-family: 'Geist', sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+    }
+
+    .question-text {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary);
+        line-height: 1.6;
+    }
+
+    .options-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .opt-label {
+        cursor: pointer;
+        display: block;
+    }
+
+    .opt-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        transition: border-color 0.15s, background 0.15s;
+    }
+
+    .opt-card:hover {
+        border-color: var(--primary-border);
+        background: var(--primary-dim);
+    }
+
+    .opt-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-dim);
+    }
+
+    .opt-key {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: var(--surface-container-high);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Geist', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-dim);
+        flex-shrink: 0;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .opt-card.selected .opt-key {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #0b1326;
+    }
+
+    .opt-text {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .opt-card.selected .opt-text {
+        color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="arena-wrap">
+
+    <div class="arena-header">
+        <div class="arena-meta">
+            <span class="arena-q-count">Question {{ progress }} of 5</span>
+            <span class="arena-cat">
+                {% if duel.category == 'coding' %}<i class="ti ti-code" style="font-size:11px;"></i>{% else %}<i
+                    class="ti ti-math" style="font-size:11px;"></i>{% endif %}
+                {{ duel.category|capfirst }}
+            </span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill">{{ progress }}/5</div>
+        </div>
+        <div class="vs-bar">
+            <span class="you"><i class="ti ti-user" style="font-size:11px;"></i> {{ duel.challenger.username }}</span>
+            <span style="color:var(--border);">vs</span>
+            <span class="opp">{{ duel.opponent.username }} <i class="ti ti-user" style="font-size:11px;"></i></span>
+        </div>
+    </div>
+
+    <div class="sd-card question-card">
+        <div class="question-tag">
+            <i class="ti ti-help-circle" style="font-size:12px;"></i> Question {{ progress }}
+        </div>
+        <div class="question-text">{{ duel_q.question.text }}</div>
+    </div>
+
+    <form method="post" id="arena-form">
+        {% csrf_token %}
+        <div class="options-list">
+            {% for val, label in duel_q.question.ANSWER_CHOICES %}
+            <label class="opt-label">
+                <input type="radio" name="answer" value="{{ val }}" class="opt-radio" style="display:none;" required>
+                <div class="opt-card" data-key="{{ val }}">
+                    <div class="opt-key">{{ label }}</div>
+                    <div class="opt-text">
+                        {% if val == 'a' %}{{ duel_q.question.option_a }}
+                        {% elif val == 'b' %}{{ duel_q.question.option_b }}
+                        {% elif val == 'c' %}{{ duel_q.question.option_c }}
+                        {% elif val == 'd' %}{{ duel_q.question.option_d }}{% endif %}
+                    </div>
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn-primary"
+            style="width:100%; justify-content:center; padding:11px; margin-top:14px; font-size:14px;">
+            Submit answer <i class="ti ti-arrow-right"></i>
+        </button>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.opt-radio').forEach(r => {
+        r.addEventListener('change', () => {
+            document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
+            r.closest('.opt-label').querySelector('.opt-card').classList.add('selected');
+        });
+    });
+</script>
+{% endblock %}
