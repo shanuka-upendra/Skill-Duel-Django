@@ -4,17 +4,27 @@
 {% block content %}
 <div class="page-wrap">
 
-    <div style="margin-bottom:2rem;">
+    <!-- <div style="margin-bottom:2rem;">
         <div class="page-title"><i class="ti ti-inbox" style="color:var(--primary);"></i> Duel Inbox</div>
         <div class="page-sub">Manage your incoming and active duels</div>
+    </div> -->
+
+    <div class="card" style="padding:1.5rem 2rem; margin-bottom:2rem; text-align:center;">
+        <h2 class="hero-title">
+            <div class="page-title"><i class="ti ti-inbox" style="color:var(--primary);"></i> Duel Inbox</div>
+
+        </h2>
+        <p class="hero-sub">
+        <div class="page-sub">Manage your incoming and active duels</div>
+        </p>
     </div>
 
     <!-- Incoming challenges -->
     <div class="section-label">
         Incoming challenges
         {% if pending %}<span
-            style="background:var(--error-dim); color:var(--error); border:1px solid var(--error-border); font-size:11px; padding:1px 8px; border-radius:20px; margin-left:6px;">{{
-            pending|length }} new</span>{% endif %}
+            style="background:var(--error-dim); color:var(--error); border:1px solid var(--error-border); font-size:11px; padding:1px 8px; border-radius:20px; margin-left:6px;">
+            {{ pending|length }} new</span>{% endif %}
     </div>
     <div class="sd-card" style="overflow:hidden; margin-bottom:1.5rem;">
         {% for duel in pending %}
@@ -62,8 +72,8 @@
                 </div>
                 <div style="margin-top:4px;">
                     <span
-                        style="font-size:11px; padding:2px 9px; border-radius:20px; border:1px solid var(--border); color:var(--text-dim); font-family:'Geist',sans-serif;">{{
-                        duel.category|capfirst }}</span>
+                        style="font-size:11px; color:var(--coral); padding:2px 9px; border-radius:20px; border:1px solid var(--border); font-family:'Geist',sans-serif;">
+                        {{duel.category|capfirst}}</span>
                 </div>
             </div>
             <span class="badge-active">Continue <i class="ti ti-arrow-right" style="font-size:11px;"></i></span>
@@ -84,13 +94,13 @@
             style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border-subtle);">
             <div>
                 <div style="font-size:13px; color:var(--text-primary);">
-                    Waiting for <span style="color:var(--secondary); font-weight:500;">{{ duel.opponent.username
-                        }}</span> to accept
+                    Waiting for <span style="color:var(--secondary); font-weight:500;">
+                        {{duel.opponent.username}}</span> to accept
                 </div>
                 <div style="margin-top:4px; display:flex; align-items:center; gap:8px;">
                     <span
-                        style="font-size:11px; padding:2px 9px; border-radius:20px; border:1px solid var(--border); color:var(--text-dim); font-family:'Geist',sans-serif;">{{
-                        duel.category|capfirst }}</span>
+                        style="font-size:11px; padding:2px 9px; border-radius:20px; border:1px solid var(--border); color:var(--text-dim); font-family:'Geist',sans-serif;">
+                        {{duel.category|capfirst }}</span>
                     <span style="font-size:11px; color:var(--text-dim);">{{ duel.created_at|timesince }} ago</span>
                 </div>
             </div>
