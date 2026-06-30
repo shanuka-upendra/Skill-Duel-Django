@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} — Skill Duel{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+
+    <!-- Profile header -->
+    <div class="sd-card" style="padding:2rem; margin-bottom:1.5rem; text-align:center;
+       background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(76,215,246,0.07) 0%, transparent 70%);">
+
+        <!-- Avatar -->
+        <div style="width:72px; height:72px; border-radius:50%;
+         background:var(--primary-dim); border:2px solid var(--primary-border);
+         display:flex; align-items:center; justify-content:center;
+         font-family:'Geist',sans-serif; font-size:26px; font-weight:700;
+         color:var(--primary); margin:0 auto 1rem;">
+            {{ profile_user.username|slice:":2"|upper }}
+        </div>
+
+        <div style="font-family:'Sora',sans-serif; font-size:22px; font-weight:700;
+         color:var(--text-primary); margin-bottom:6px;">
+            {{ profile_user.username }}
+        </div>
+
+        <span class="rank-badge rank-{{ profile.rank }}" style="font-size:12px; padding:3px 12px;">
+            {{ profile.rank|capfirst }}
+        </span>
+
+        {% if profile_user == request.user %}
+        <div style="margin-top:10px;">
+            <span style="font-size:12px; color:var(--primary); font-family:'Geist',sans-serif;">
+                <i class="ti ti-user-check" style="font-size:12px;"></i> This is you
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Stats grid -->
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:1.5rem;">
+        <div class="sd-card" style="padding:1.25rem; text-align:center;">
+            <div style="font-family:'Sora',sans-serif; font-size:30px; font-weight:700; color:var(--primary);">
+                {{ profile.wins }}
+            </div>
+            <div
+                style="font-size:11px; font-family:'Geist',sans-serif; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:0.05em;">
+                Wins</div>
+        </div>
+        <div class="sd-card" style="padding:1.25rem; text-align:center;">
+            <div style="font-family:'Sora',sans-serif; font-size:30px; font-weight:700; color:var(--error);">
+                {{ profile.losses }}
+            </div>
+            <div
+                style="font-size:11px; font-family:'Geist',sans-serif; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:0.05em;">
+                Losses</div>
+        </div>
+        <div class="sd-card" style="padding:1.25rem; text-align:center;">
+            <div style="font-family:'Sora',sans-serif; font-size:30px; font-weight:700; color:var(--secondary);">
+                {{ profile.win_rate }}%
+            </div>
+            <div
+                style="font-size:11px; font-family:'Geist',sans-serif; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:0.05em;">
+                Win Rate</div>
+        </div>
+    </div>
+
+    <!-- Challenge button — only show if viewing someone else -->
+    {% if profile_user != request.user %}
+    <div style="margin-bottom:1.5rem;">
+        <a href="/skillduel/create" class="btn-primary btn-primary-full">
+            <i class="ti ti-sword"></i> Challenge {{ profile_user.username }}
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Duel history -->
+    <div class="section-label">Recent duel history</div>
+    <div class="sd-card" style="overflow:hidden;">
+        {% for duel in duels %}
+        <a href="/skillduel/{{ duel.id }}/result"
+            style="display:flex; align-items:center; justify-content:space-between; padding:13px 18px; border-bottom:1px solid var(--border-subtle); text-decoration:none; color:inherit; transition:background 0.15s;"
+            onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='transparent'">
+            <div>
+                <div style="font-size:13px; color:var(--text-primary);">
+                    <span style="color:var(--primary);">{{ duel.challenger.username }}</span>
+                    <span style="color:var(--text-dim);"> vs </span>
+                    <span style="color:var(--secondary);">{{ duel.opponent.username }}</span>
+                </div>
+                <div style="margin-top:3px; font-size:11px; color:var(--text-dim);">
+                    {{ duel.category|capfirst }} · {{ duel.created_at|date:"M d, Y" }}
+                </div>
+            </div>
+            <div style="text-align:right;">
+                {% if duel.winner == profile_user %}
+                <span style="font-size:12px; font-family:'Geist',sans-serif; font-weight:600; color:var(--primary);">
+                    <i class="ti ti-trophy" style="font-size:12px;"></i> Won
+                </span>
+                {% elif duel.winner == None %}
+                <span style="font-size:12px; font-family:'Geist',sans-serif; color:var(--text-dim);">Draw</span>
+                {% else %}
+                <span style="font-size:12px; font-family:'Geist',sans-serif; color:var(--error);">Lost</span>
+                {% endif %}
+            </div>
+        </a>
+        {% empty %}
+        <div style="padding:2.5rem; text-align:center; color:var(--text-dim); font-size:13px;">
+            <i class="ti ti-history" style="font-size:28px; display:block; margin-bottom:8px;"></i>
+            No finished duels yet
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
