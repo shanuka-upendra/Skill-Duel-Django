@@ -10,4 +10,6 @@ urlpatterns = [
     path('skillduel/<int:duel_id>',       views.duel_arena_view,    name='duel_arena'),
     path('skillduel/<int:duel_id>/result',views.duel_result_view,   name='duel_result'),
     path('skillduel/leaderboard',         views.leaderboard_view,   name='leaderboard'),
+    path('skillduel/inbox',               views.inbox_view,         name='inbox'),
+    path('profile/<str:username>', views.profile_view, name='profile'),
 ]

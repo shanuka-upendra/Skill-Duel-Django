@@ -46,58 +46,119 @@ def logout_view(request):
 def home_view(request):
     recent_duels = Duel.objects.filter(
         db_models.Q(challenger=request.user) | db_models.Q(opponent=request.user)
-    ).order_by('-created_at')[:5]
+    ).order_by("-created_at")[:5]
 
     # Get or create profile safely
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
-    return render(request, 'skillduel/home.html', {
-        'recent_duels': recent_duels,
-        'profile': profile,
-    })
+    return render(
+        request,
+        "skillduel/home.html",
+        {
+            "recent_duels": recent_duels,
+            "profile": profile,
+        },
+    )
+
+
+# ── Pending duels inbox ───────────────────────────────────────
+@login_required
+def inbox_view(request):
+    # Duels where I am the opponent and haven't started yet
+    pending = Duel.objects.filter(opponent=request.user, status="pending").order_by(
+        "-created_at"
+    )
+
+    # Duels where I am challenger and opponent hasn't joined
+    sent = Duel.objects.filter(challenger=request.user, status="pending").order_by(
+        "-created_at"
+    )
+
+    # Active duels I still need to finish
+    active = Duel.objects.filter(
+        db_models.Q(challenger=request.user) | db_models.Q(opponent=request.user),
+        status="active",
+    ).order_by("-created_at")
+
+    return render(
+        request,
+        "skillduel/inbox.html",
+        {
+            "pending": pending,
+            "sent": sent,
+            "active": active,
+        },
+    )
+
+
+# ── Profile page ──────────────────────────────────────────────
+@login_required
+def profile_view(request, username):
+    profile_user = get_object_or_404(User, username=username)
+    profile, _ = UserProfile.objects.get_or_create(user=profile_user)
+
+    # Last 10 duels for this user
+    duels = Duel.objects.filter(
+        db_models.Q(challenger=profile_user) | db_models.Q(opponent=profile_user),
+        status="finished",
+    ).order_by("-created_at")[:10]
+
+    return render(
+        request,
+        "skillduel/profile.html",
+        {
+            "profile_user": profile_user,
+            "profile": profile,
+            "duels": duels,
+        },
+    )
+
 
 # ── 5. finish_duel — MUST be before duel_arena_view ──────────
 def finish_duel(duel):
     def score(user):
-        return Answer.objects.filter(
-            duel=duel, player=user, is_correct=True
-        ).count()
+        return Answer.objects.filter(duel=duel, player=user, is_correct=True).count()
 
     c_score = score(duel.challenger)
     o_score = score(duel.opponent)
 
     if c_score > o_score:
         winner = duel.challenger
-        loser  = duel.opponent
+        loser = duel.opponent
     elif o_score > c_score:
         winner = duel.opponent
-        loser  = duel.challenger
+        loser = duel.challenger
     else:
         winner = None
-        loser  = None
+        loser = None
 
     duel.winner = winner
-    duel.status = 'finished'
+    duel.status = "finished"
     duel.save()
 
     if winner and loser:
         # get_or_create prevents the DoesNotExist crash
         winner_profile, _ = UserProfile.objects.get_or_create(user=winner)
-        loser_profile,  _ = UserProfile.objects.get_or_create(user=loser)
+        loser_profile, _ = UserProfile.objects.get_or_create(user=loser)
 
-        winner_profile.wins   += 1
-        loser_profile.losses  += 1
+        winner_profile.wins += 1
+        loser_profile.losses += 1
 
         def get_rank(wins):
-            if wins >= 20: return 'legend'
-            if wins >= 10: return 'platinum'
-            if wins >= 5:  return 'gold'
-            if wins >= 2:  return 'silver'
-            return 'bronze'
+            if wins >= 20:
+                return "legend"
+            if wins >= 10:
+                return "platinum"
+            if wins >= 5:
+                return "gold"
+            if wins >= 2:
+                return "silver"
+            return "bronze"
 
         winner_profile.rank = get_rank(winner_profile.wins)
         winner_profile.save()
         loser_profile.save()
+
 
 # ── 6. Create duel ────────────────────────────────────────────
 @login_required
@@ -245,5 +306,5 @@ def leaderboard_view(request):
     for user in User.objects.all():
         UserProfile.objects.get_or_create(user=user)
 
-    profiles = UserProfile.objects.select_related('user').order_by('-wins')
-    return render(request, 'skillduel/leaderboard.html', {'profiles': profiles})
+    profiles = UserProfile.objects.select_related("user").order_by("-wins")
+    return render(request, "skillduel/leaderboard.html", {"profiles": profiles})
