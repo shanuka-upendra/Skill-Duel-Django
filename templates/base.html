@@ -325,16 +325,21 @@
             {% if request.user.is_authenticated %}
 
             <!-- XP / token stats (visible md+) -->
+            <!-- upcoming feature -->
             <div class="stat-pill" style="display:none;" id="stat-pill-nav">
-                <span class="val" style="color:var(--primary);">{{ request.user.profile.xp|default:"0" }} XP</span>
+                <!-- <span class="val" style="color:var(--primary);">{{ request.user.profile.xp|default:"0" }} XP</span>
                 <span class="divider"></span>
                 <span class="val" style="color:var(--secondary);">{{ request.user.profile.tokens|default:"0" }}
-                    Tokens</span>
+                    Tokens</span> -->
+                <h4 class="val" style="color:var(--text-primary);">{{ request.user.username }}</h4>
             </div>
+
+            
 
             <a href="/skillduel/leaderboard" class="btn-ghost"><i class="ti ti-trophy"></i> Leaderboard</a>
             <a href="/skillduel/create" class="btn-ghost"><i class="ti ti-sword"></i> New duel</a>
-            <span style="font-size:12px; color:var(--text-dim); padding:0 4px;">{{ request.user.username }}</span>
+            <a href="/skillduel/inbox" class="btn-ghost"><i class="ti ti-inbox"></i> Inbox</a>
+            <a href="/profile/{{ request.user.username }}" class="btn-ghost"><i class="ti ti-user"></i> Profile</a>
             <a href="/logout" class="btn-ghost"><i class="ti ti-logout"></i> Logout</a>
 
             {% else %}
