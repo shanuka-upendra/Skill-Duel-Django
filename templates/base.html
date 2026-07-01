@@ -67,7 +67,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
+            position: relative;
             top: 0;
             z-index: 100;
         }
@@ -272,6 +272,21 @@
             margin-bottom: 10px;
         }
 
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 28px;
+            cursor: pointer;
+        }
+
         /* ── Stat pill (XP / tokens in nav) ──────── */
         .stat-pill {
             display: flex;
@@ -307,6 +322,40 @@
             }
         }
 
+        /* Mobile / Small Window */
+        @media (max-width: 1100px) {
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 56px;
+                right: 1.5rem;
+                width: 250px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 15px;
+                border-radius: 12px;
+                background: #0b1326;
+                border: 1px solid var(--border);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+                z-index: 1000;
+            }
+
+            /* .nav-links.show {
+                display: flex;
+            } */
+
+            /* .nav-links a,
+            .stat-pill {
+                width: 100%;
+            } */
+        }
+
         .cyber-pulse {
             animation: pulse-glow 2s infinite alternate;
         }
@@ -321,31 +370,44 @@
             <i class="ti ti-sword"></i> SKILL DUEL
         </a>
 
-        <div style="display:flex; align-items:center; gap:10px;">
+        <!-- Mobile Menu Button -->
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <i class="ti ti-menu-2"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
             {% if request.user.is_authenticated %}
 
-            <!-- XP / token stats (visible md+) -->
-            <!-- upcoming feature -->
-            <div class="stat-pill" style="display:none;" id="stat-pill-nav">
-                <!-- <span class="val" style="color:var(--primary);">{{ request.user.profile.xp|default:"0" }} XP</span>
-                <span class="divider"></span>
-                <span class="val" style="color:var(--secondary);">{{ request.user.profile.tokens|default:"0" }}
-                    Tokens</span> -->
-                <h4 class="val" style="color:var(--text-primary);">{{ request.user.username }}</h4>
+            <div class="stat-pill" id="stat-pill-nav">
+                <h4 class="val">{{ request.user.username }}</h4>
             </div>
 
-            
+            <a href="/skillduel/leaderboard" class="btn-ghost">
+                <i class="ti ti-trophy"></i> Leaderboard
+            </a>
 
-            <a href="/skillduel/leaderboard" class="btn-ghost"><i class="ti ti-trophy"></i> Leaderboard</a>
-            <a href="/skillduel/create" class="btn-ghost"><i class="ti ti-sword"></i> New duel</a>
-            <a href="/skillduel/inbox" class="btn-ghost"><i class="ti ti-inbox"></i> Inbox</a>
-            <a href="/profile/{{ request.user.username }}" class="btn-ghost"><i class="ti ti-user"></i> Profile</a>
-            <a href="/logout" class="btn-ghost"><i class="ti ti-logout"></i> Logout</a>
+            <a href="/skillduel/create" class="btn-ghost">
+                <i class="ti ti-sword"></i> New Duel
+            </a>
+
+            <a href="/skillduel/inbox" class="btn-ghost">
+                <i class="ti ti-inbox"></i> Inbox
+            </a>
+
+            <a href="/profile/{{ request.user.username }}" class="btn-ghost">
+                <i class="ti ti-user"></i> Profile
+            </a>
+
+            <a href="/logout" class="btn-ghost">
+                <i class="ti ti-logout"></i> Logout
+            </a>
 
             {% else %}
 
             <a href="/login" class="btn-ghost">Login</a>
-            <a href="/register" class="btn-primary"><i class="ti ti-user-plus"></i> Register</a>
+            <a href="/register" class="btn-primary">
+                <i class="ti ti-user-plus"></i> Register
+            </a>
 
             {% endif %}
         </div>
@@ -356,6 +418,9 @@
     </main>
 
     <script>
+        const menu = document.getElementById("navLinks");
+        const toggleBtn = document.querySelector(".menu-toggle");
+
         /* Show stat pill only if wide enough */
         const pill = document.getElementById('stat-pill-nav');
         if (pill) {
@@ -363,9 +428,26 @@
             show();
             window.addEventListener('resize', show);
         }
+
+        function toggleMenu() {
+            menu.classList.toggle("show");
+        }
+
+        document.addEventListener('click', function (event) {
+            if (!menu.contains(event.target) && !toggleBtn.contains(event.target)) {
+                menu.classList.remove("show");
+            }
+        });
+
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.remove("show");
+            });
+        });
     </script>
 
     {% block extra_js %}{% endblock %}
+    
 </body>
 
 </html>
