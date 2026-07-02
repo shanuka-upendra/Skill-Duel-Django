@@ -137,3 +137,10 @@ Templates
 - 📬 Challenge inbox
 - 🛡 Django admin management
 - ☁️ Deployed on Railway
+
+## 👤 Author
+
+Developed by **Shanuka Upendra**
+
+GitHub: **@shanuka-upendra**  
+https://github.com/shanuka-upendra
