@@ -73,4 +73,52 @@ Administrators can easily:
 - Python 3.12+
 - Git
 
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR-USERNAME/skill-duel-django.git
+
+# Navigate to the project directory
+cd skill-duel-django
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install the required dependencies
+pip install -r requirements.txt
+
+#Database migrations
+python manage.py makemigrations
+python manage.py migrate
+
+#Development server
+python manage.py runserver
+
+Open your browser and go to http://127.0.0.1:8000/
+```
+
+## Project Structure
+
+The application follows a standard Django project structure:
+
+Models
+- **User**: Represents a player with attributes like username, email, password, and profile information.
+- **Question**: Represents a question in the duel, including the question text, options,
+- **Duel**: Represents a duel between two players, including the questions, scores, and winner.
+- **DuelQuestion**: Represents the relationship between a duel and its questions, including the player's answers and scores.
+- **Answer**: Represents the answers provided by players during a duel, including the selected option and correctness.
+
+Views
+- **Home View**: Displays the main page with options to start a duel or view the leaderboard.
+- **Duel View**: Handles the logic for a 1v1 duel, including question display and answer submission.
+- **Leaderboard View**: Shows the global leaderboard with player rankings.
+- **Profile View**: Allows users to view their profile information and statistics.
+
+Templates
+- shared **base.html**
+- Reusable Components
 
