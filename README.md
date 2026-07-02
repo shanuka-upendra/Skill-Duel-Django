@@ -122,3 +122,11 @@ Templates
 - shared **base.html**
 - Reusable Components
 
+## 📈 Future Roadmap
+- ✅ Build a REST API using Django REST Framework
+- ✅ Add WebSockets (Django Channels) for real-time duels
+- ✅ Introduce 30-second timed rounds
+- ✅ Add comprehensive pytest unit and integration tests
+- ✅ Improve matchmaking and player statistics
+
+
