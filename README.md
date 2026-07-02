@@ -129,4 +129,11 @@ Templates
 - ✅ Add comprehensive pytest unit and integration tests
 - ✅ Improve matchmaking and player statistics
 
-
+## 📸 Highlights
+- 🎮 Competitive 1v1 gameplay
+- ⚡ Instant scoring
+- 🏆 Global rankings
+- 👥 User profiles
+- 📬 Challenge inbox
+- 🛡 Django admin management
+- ☁️ Deployed on Railway
