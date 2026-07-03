@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import models as db_models
 from .models import UserProfile, Question, Duel, DuelQuestion, Answer
+from .utils import fetch_questions_from_api
 import random
 
 
@@ -168,8 +169,49 @@ def create_duel_view(request):
     if request.method == "POST":
         opponent_id = request.POST.get("opponent")
         category = request.POST.get("category")
+
+        # Validate category
+        if category not in ["coding", "math"]:
+            return render(
+                request,
+                "skillduel/create_duel.html",
+                {"users": users, "error": "Invalid category selected."},
+            )
+
         opponent = get_object_or_404(User, id=opponent_id)
 
+        # Fetch fresh questions from OpenTDB API
+        api_questions = fetch_questions_from_api(category, amount=5)
+
+        # Fallback to DB if API fails
+        if not api_questions:
+            db_questions = list(Question.objects.filter(category=category))
+            if len(db_questions) < 5:
+                return render(
+                    request,
+                    "skillduel/create_duel.html",
+                    {
+                        "users": users,
+                        "error": "Could not load questions right now. Please try again in a moment.",
+                    },
+                )
+            import random
+
+            selected = random.sample(db_questions, 5)
+            api_questions = [
+                {
+                    "text": q.text,
+                    "category": q.category,
+                    "option_a": q.option_a,
+                    "option_b": q.option_b,
+                    "option_c": q.option_c,
+                    "option_d": q.option_d,
+                    "correct": q.correct,
+                }
+                for q in selected
+            ]
+
+        # Create duel
         duel = Duel.objects.create(
             challenger=request.user,
             opponent=opponent,
@@ -177,25 +219,22 @@ def create_duel_view(request):
             status="pending",
         )
 
-        questions = list(Question.objects.filter(category=category))
-        if len(questions) < 5:
-            needed = 5 - len(questions)
-            duel.delete()
-            return render(
-                request,
-                "skillduel/create_duel.html",
-                {
-                    "users": users,
-                    "error": f"Not enough {category} questions. Need {needed} more.",
-                },
+        # Save questions and link to duel
+        for i, q_data in enumerate(api_questions, start=1):
+            question = Question.objects.create(
+                text=q_data["text"],
+                category=q_data["category"],
+                option_a=q_data["option_a"],
+                option_b=q_data["option_b"],
+                option_c=q_data["option_c"],
+                option_d=q_data["option_d"],
+                correct=q_data["correct"],
             )
-
-        selected = random.sample(questions, 5)
-        for i, q in enumerate(selected, start=1):
-            DuelQuestion.objects.create(duel=duel, question=q, order=i)
+            DuelQuestion.objects.create(duel=duel, question=question, order=i)
 
         return redirect(f"/skillduel/{duel.id}")
 
+    # GET request — just show the form
     return render(request, "skillduel/create_duel.html", {"users": users})
 
 
@@ -251,10 +290,10 @@ def duel_arena_view(request, duel_id):
 
         my_answers = Answer.objects.filter(duel=duel, player=request.user).count()
         if my_answers == 5:
-            oppenent = (
+            opponent = (
                 duel.opponent if request.user == duel.challenger else duel.challenger
             )
-            opp_answers = Answer.objects.filter(duel=duel, player=oppenent).count()
+            opp_answers = Answer.objects.filter(duel=duel, player=opponent).count()
 
             if opp_answers == 5:
                 finish_duel(duel)
