@@ -244,76 +244,63 @@ def duel_arena_view(request, duel_id):
     duel = get_object_or_404(Duel, id=duel_id)
 
     if request.user not in [duel.challenger, duel.opponent]:
-        return redirect("/")
+        return redirect('/')
 
-    if duel.status == "finished":
-        return redirect(f"/skillduel/{duel.id}/result")
+    if duel.status == 'finished':
+        return redirect(f'/skillduel/{duel.id}/result')
 
-    if duel.status == "pending" and request.user == duel.opponent:
-        duel.status = "active"
+    if duel.status == 'pending' and request.user == duel.opponent:
+        duel.status = 'active'
         duel.save()
 
     duel_questions = duel.duel_questions.all()
-    answered_ids = Answer.objects.filter(duel=duel, player=request.user).values_list(
-        "question_id", flat=True
-    )
+    answered_ids   = Answer.objects.filter(
+        duel=duel, player=request.user
+    ).values_list('question_id', flat=True)
 
+    # Find first unanswered question
     current_dq = None
     for dq in duel_questions:
         if dq.question.id not in answered_ids:
             current_dq = dq
             break
 
+    # Player finished all 5
     if current_dq is None:
-        return render(request, "skillduel/waiting.html", {"duel": duel})
+        opponent = duel.opponent if request.user == duel.challenger else duel.challenger
+        opp_answers = Answer.objects.filter(duel=duel, player=opponent).count()
+        if opp_answers == 5:
+            finish_duel(duel)
+            return redirect(f'/skillduel/{duel.id}/result')
+        return render(request, 'skillduel/waiting.html', {'duel': duel})
 
-    if request.method == "POST":
-        chosen = request.POST.get("answer")
+    if request.method == 'POST':
+        chosen   = request.POST.get('answer')
         question = current_dq.question
-        is_correct = chosen == question.correct
 
-        Answer.objects.create(
-            duel=duel,
-            player=request.user,
-            question=question,
-            chosen=chosen,
-            is_correct=is_correct,
-        )
+        already = Answer.objects.filter(
+            duel=duel, player=request.user, question=question
+        ).exists()
 
-        # total_answers = Answer.objects.filter(duel=duel).count()
-        # print(f"DEBUG total_answers={total_answers}")
-        # if total_answers == 10:
-        #     finish_duel(duel)
-        #     return redirect(f"/skillduel/{duel.id}/result")
-
-        # return redirect(f"/skillduel/{duel.id}")
-
-        my_answers = Answer.objects.filter(duel=duel, player=request.user).count()
-        if my_answers == 5:
-            opponent = (
-                duel.opponent if request.user == duel.challenger else duel.challenger
+        if not already and chosen:
+            is_correct = (chosen == question.correct)
+            Answer.objects.create(
+                duel       = duel,
+                player     = request.user,
+                question   = question,
+                chosen     = chosen,
+                is_correct = is_correct
             )
-            opp_answers = Answer.objects.filter(duel=duel, player=opponent).count()
 
-            if opp_answers == 5:
-                finish_duel(duel)
-                return redirect(f"/skillduel/{duel.id}/result")
-            else:
-                return render(request, "skillduel/waiting.html", {"duel": duel})
-
-        return redirect(f"/skillduel/{duel.id}")
+        return redirect(f'/skillduel/{duel.id}')
 
     progress = len(answered_ids) + 1
 
-    return render(
-        request,
-        "skillduel/arena.html",
-        {
-            "duel": duel,
-            "duel_q": current_dq,
-            "progress": progress,
-        },
-    )
+    return render(request, 'skillduel/arena.html', {
+        'duel':     duel,
+        'duel_q':   current_dq,
+        'progress': progress,
+    })
 
 
 # ── 8. Duel result ────────────────────────────────────────────
@@ -321,21 +308,46 @@ def duel_arena_view(request, duel_id):
 def duel_result_view(request, duel_id):
     duel = get_object_or_404(Duel, id=duel_id)
 
+    # Get all questions for this duel in order
+    duel_questions = duel.duel_questions.select_related('question').all()
+
+    # Get answers for both players
     c_answers = Answer.objects.filter(duel=duel, player=duel.challenger)
     o_answers = Answer.objects.filter(duel=duel, player=duel.opponent)
 
     c_score = c_answers.filter(is_correct=True).count()
     o_score = o_answers.filter(is_correct=True).count()
 
-    return render(
-        request,
-        "skillduel/result.html",
-        {
-            "duel": duel,
-            "c_score": c_score,
-            "o_score": o_score,
-        },
-    )
+    # Build question breakdown for current user
+    my_answers = Answer.objects.filter(
+        duel=duel, player=request.user
+    ).select_related('question')
+
+    # Map question_id → answer for quick lookup
+    my_answer_map = {a.question_id: a for a in my_answers}
+
+    breakdown = []
+    for i, dq in enumerate(duel_questions, start=1):
+        q       = dq.question
+        my_ans  = my_answer_map.get(q.id)
+        breakdown.append({
+            'number':     i,
+            'text':       q.text,
+            'option_a':   q.option_a,
+            'option_b':   q.option_b,
+            'option_c':   q.option_c,
+            'option_d':   q.option_d,
+            'correct':    q.correct,
+            'chosen':     my_ans.chosen if my_ans else None,
+            'is_correct': my_ans.is_correct if my_ans else False,
+        })
+
+    return render(request, 'skillduel/result.html', {
+        'duel':      duel,
+        'c_score':   c_score,
+        'o_score':   o_score,
+        'breakdown': breakdown,
+    })
 
 
 # ── 9. Leaderboard ────────────────────────────────────────────

@@ -4,57 +4,78 @@
 {% block extra_css %}
 <style>
     .result-wrap {
-        max-width: 520px;
+        max-width: 600px;
         margin: 0 auto;
-        padding: 3rem 1.5rem;
+        padding: 2.5rem 1.5rem;
+    }
+
+    /* ── Winner banner ─────────────────────────── */
+    .winner-banner {
         text-align: center;
+        padding: 2rem 1rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
     }
 
-    .result-icon {
-        font-size: 52px;
+    .winner-banner.win {
+        background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(76, 215, 246, 0.1) 0%, transparent 70%);
+        border: 1px solid var(--primary-border);
+    }
+
+    .winner-banner.loss {
+        background: var(--error-dim);
+        border: 1px solid var(--error-border);
+    }
+
+    .winner-banner.draw {
+        background: var(--secondary-dim);
+        border: 1px solid var(--secondary-border);
+    }
+
+    .winner-icon {
+        font-size: 48px;
         display: block;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
-    .result-title {
+    .winner-title {
         font-family: 'Sora', sans-serif;
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 800;
         letter-spacing: -0.02em;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
     }
 
-    .result-title.win {
+    .winner-title.win {
         background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
 
-    .result-title.loss {
+    .winner-title.loss {
         color: var(--error);
     }
 
-    .result-title.draw {
+    .winner-title.draw {
         color: var(--secondary);
     }
 
-    .result-sub {
+    .winner-sub {
         font-size: 13px;
         color: var(--text-dim);
-        margin-bottom: 2.5rem;
     }
 
+    /* ── Score cards ───────────────────────────── */
     .score-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 2rem;
+        gap: 10px;
+        margin-bottom: 1.5rem;
     }
 
     .score-card {
-        padding: 1.5rem 1rem;
-        border-radius: 12px;
+        padding: 1.25rem;
         text-align: center;
     }
 
@@ -73,23 +94,22 @@
 
     .score-num {
         font-family: 'Sora', sans-serif;
-        font-size: 40px;
+        font-size: 38px;
         font-weight: 800;
         color: var(--text-primary);
-        letter-spacing: -0.02em;
     }
 
-    .score-num .denom {
-        font-size: 16px;
-        color: var(--text-dim);
-        font-weight: 400;
-    }
-
-    .score-card.winner-card .score-num {
+    .score-num.win-score {
         background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+    }
+
+    .score-denom {
+        font-size: 16px;
+        color: var(--text-dim);
+        font-weight: 400;
     }
 
     .winner-crown {
@@ -97,13 +117,146 @@
         color: var(--primary);
         font-family: 'Geist', sans-serif;
         letter-spacing: 0.05em;
-        margin-top: 6px;
+        margin-top: 5px;
     }
 
+    /* ── Action buttons ────────────────────────── */
     .action-row {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ── Breakdown toggle button ───────────────── */
+    .breakdown-toggle {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    /* ── Breakdown items ───────────────────────── */
+    .breakdown-item {
+        background: var(--surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 10px;
+    }
+
+    .breakdown-item.correct-item {
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .breakdown-item.wrong-item {
+        border-color: var(--error-border);
+    }
+
+    .breakdown-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .q-number {
+        font-family: 'Geist', sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+    }
+
+    .correct-badge {
+        font-size: 11px;
+        font-family: 'Geist', sans-serif;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 20px;
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .wrong-badge {
+        font-size: 11px;
+        font-family: 'Geist', sans-serif;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 20px;
+        background: var(--error-dim);
+        color: var(--error);
+        border: 1px solid var(--error-border);
+    }
+
+    .q-text {
+        font-size: 14px;
+        color: var(--text-primary);
+        line-height: 1.5;
+        margin-bottom: 12px;
+        font-weight: 500;
+    }
+
+    .options-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .opt-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        color: var(--text-muted);
+        border: 1px solid transparent;
+        background: var(--surface-container);
+    }
+
+    .opt-item.opt-correct {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #10b981;
+    }
+
+    .opt-item.opt-wrong {
+        background: var(--error-dim);
+        border-color: var(--error-border);
+        color: var(--error);
+    }
+
+    .opt-key-sm {
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Geist', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--surface-container-high);
+        color: var(--text-dim);
+        flex-shrink: 0;
+    }
+
+    .opt-item.opt-correct .opt-key-sm {
+        background: #10b981;
+        color: #fff;
+    }
+
+    .opt-item.opt-wrong .opt-key-sm {
+        background: var(--error);
+        color: #fff;
+    }
+
+    .opt-hint {
+        font-size: 10px;
+        font-family: 'Geist', sans-serif;
+        margin-left: auto;
+        opacity: 0.7;
+        white-space: nowrap;
     }
 </style>
 {% endblock %}
@@ -111,44 +264,183 @@
 {% block content %}
 <div class="result-wrap">
 
+    <!-- ── Winner banner ── -->
     {% if duel.winner %}
     {% if duel.winner == request.user %}
-    <i class="ti ti-trophy result-icon" style="color:var(--primary);"></i>
-    <div class="result-title win">You won!</div>
-    <div class="result-sub">+1 win added to your profile</div>
+    <div class="winner-banner win">
+        <i class="ti ti-trophy winner-icon" style="color:var(--primary);"></i>
+        <div class="winner-title win">You won!</div>
+        <div class="winner-sub">+1 win · Rank updated</div>
+    </div>
     {% else %}
-    <i class="ti ti-mood-sad result-icon" style="color:var(--error);"></i>
-    <div class="result-title loss">You lost</div>
-    <div class="result-sub">{{ duel.winner.username }} takes this one — rematch?</div>
+    <div class="winner-banner loss">
+        <i class="ti ti-mood-sad winner-icon" style="color:var(--error);"></i>
+        <div class="winner-title loss">You lost</div>
+        <div class="winner-sub">{{ duel.winner.username }} takes this one — rematch?</div>
+    </div>
     {% endif %}
     {% else %}
-    <i class="ti ti-handshake result-icon" style="color:var(--secondary);"></i>
-    <div class="result-title draw">It's a draw!</div>
-    <div class="result-sub">Perfectly matched opponents</div>
+    <div class="winner-banner draw">
+        <i class="ti ti-handshake winner-icon" style="color:var(--secondary);"></i>
+        <div class="winner-title draw">It's a draw!</div>
+        <div class="winner-sub">Perfectly matched!</div>
+    </div>
     {% endif %}
 
+    <!-- ── Score cards ── -->
     <div class="score-grid">
-        <div class="sd-card score-card {% if duel.winner == duel.challenger %}winner-card{% endif %}">
+        <div class="sd-card score-card {% if duel.winner and duel.winner == duel.challenger %}winner-card{% endif %}">
             <div class="score-name">{{ duel.challenger.username }}</div>
-            <div class="score-num">{{ c_score }}<span class="denom">/5</span></div>
-            {% if duel.winner == duel.challenger %}
+            <div class="score-num {% if duel.winner and duel.winner == duel.challenger %}win-score{% endif %}">
+                {{ c_score }}<span class="score-denom">/5</span>
+            </div>
+            {% if duel.winner and duel.winner == duel.challenger %}
             <div class="winner-crown"><i class="ti ti-crown" style="font-size:11px;"></i> Winner</div>
             {% endif %}
         </div>
-        <div class="sd-card score-card {% if duel.winner == duel.opponent %}winner-card{% endif %}">
+        <div class="sd-card score-card {% if duel.winner and duel.winner == duel.opponent %}winner-card{% endif %}">
             <div class="score-name">{{ duel.opponent.username }}</div>
-            <div class="score-num">{{ o_score }}<span class="denom">/5</span></div>
-            {% if duel.winner == duel.opponent %}
+            <div class="score-num {% if duel.winner and duel.winner == duel.opponent %}win-score{% endif %}">
+                {{ o_score }}<span class="score-denom">/5</span>
+            </div>
+            {% if duel.winner and duel.winner == duel.opponent %}
             <div class="winner-crown"><i class="ti ti-crown" style="font-size:11px;"></i> Winner</div>
             {% endif %}
         </div>
     </div>
 
+    <!-- ── Action buttons ── -->
     <div class="action-row">
         <a href="/skillduel/create" class="btn-primary"><i class="ti ti-sword"></i> New duel</a>
         <a href="/skillduel/leaderboard" class="btn-ghost"><i class="ti ti-trophy"></i> Leaderboard</a>
-        <a href="/" class="btn-ghost"><i class="ti ti-home"></i> Back to Home</a>
+        <a href="/profile/{{ request.user.username }}" class="btn-ghost"><i class="ti ti-user"></i> Profile</a>
     </div>
 
+    <!-- ── Breakdown toggle ── -->
+    <div class="breakdown-toggle">
+        <button onclick="toggleBreakdown()" id="breakdown-btn" class="btn-ghost"
+            style="font-size:13px; padding:9px 22px;">
+            <i class="ti ti-list-details"></i> Show answer breakdown
+        </button>
+    </div>
+
+    <!-- ── Hidden breakdown ── -->
+    <div id="breakdown-wrap" style="display:none;">
+
+        <div class="section-label" style="margin-bottom:12px;">
+            Your answers — {{ request.user.username }}
+        </div>
+
+        {% for q in breakdown %}
+        <div class="breakdown-item {% if q.is_correct %}correct-item{% else %}wrong-item{% endif %}">
+
+            <div class="breakdown-header">
+                <span class="q-number">Question {{ q.number }} of 5</span>
+                {% if q.is_correct %}
+                <span class="correct-badge"><i class="ti ti-check" style="font-size:10px;"></i> Correct</span>
+                {% else %}
+                <span class="wrong-badge"><i class="ti ti-x" style="font-size:10px;"></i> Wrong</span>
+                {% endif %}
+            </div>
+
+            <div class="q-text">{{ q.text }}</div>
+
+            <div class="options-grid">
+
+                <!-- Option A -->
+                <div class="opt-item
+          {% if 'a' == q.correct %}opt-correct
+          {% elif 'a' == q.chosen and not q.is_correct %}opt-wrong
+          {% endif %}">
+                    <div class="opt-key-sm">
+                        {% if 'a' == q.correct %}<i class="ti ti-check" style="font-size:10px;"></i>
+                        {% elif 'a' == q.chosen and not q.is_correct %}<i class="ti ti-x" style="font-size:10px;"></i>
+                        {% else %}A{% endif %}
+                    </div>
+                    <span>{{ q.option_a }}</span>
+                    {% if 'a' == q.correct %}<span class="opt-hint">✓ correct</span>{% endif %}
+                    {% if 'a' == q.chosen and 'a' != q.correct %}<span class="opt-hint">your answer</span>{% endif %}
+                </div>
+
+                <!-- Option B -->
+                <div class="opt-item
+          {% if 'b' == q.correct %}opt-correct
+          {% elif 'b' == q.chosen and not q.is_correct %}opt-wrong
+          {% endif %}">
+                    <div class="opt-key-sm">
+                        {% if 'b' == q.correct %}<i class="ti ti-check" style="font-size:10px;"></i>
+                        {% elif 'b' == q.chosen and not q.is_correct %}<i class="ti ti-x" style="font-size:10px;"></i>
+                        {% else %}B{% endif %}
+                    </div>
+                    <span>{{ q.option_b }}</span>
+                    {% if 'b' == q.correct %}<span class="opt-hint">✓ correct</span>{% endif %}
+                    {% if 'b' == q.chosen and 'b' != q.correct %}<span class="opt-hint">your answer</span>{% endif %}
+                </div>
+
+                <!-- Option C -->
+                <div class="opt-item
+          {% if 'c' == q.correct %}opt-correct
+          {% elif 'c' == q.chosen and not q.is_correct %}opt-wrong
+          {% endif %}">
+                    <div class="opt-key-sm">
+                        {% if 'c' == q.correct %}<i class="ti ti-check" style="font-size:10px;"></i>
+                        {% elif 'c' == q.chosen and not q.is_correct %}<i class="ti ti-x" style="font-size:10px;"></i>
+                        {% else %}C{% endif %}
+                    </div>
+                    <span>{{ q.option_c }}</span>
+                    {% if 'c' == q.correct %}<span class="opt-hint">✓ correct</span>{% endif %}
+                    {% if 'c' == q.chosen and 'c' != q.correct %}<span class="opt-hint">your answer</span>{% endif %}
+                </div>
+
+                <!-- Option D -->
+                <div class="opt-item
+          {% if 'd' == q.correct %}opt-correct
+          {% elif 'd' == q.chosen and not q.is_correct %}opt-wrong
+          {% endif %}">
+                    <div class="opt-key-sm">
+                        {% if 'd' == q.correct %}<i class="ti ti-check" style="font-size:10px;"></i>
+                        {% elif 'd' == q.chosen and not q.is_correct %}<i class="ti ti-x" style="font-size:10px;"></i>
+                        {% else %}D{% endif %}
+                    </div>
+                    <span>{{ q.option_d }}</span>
+                    {% if 'd' == q.correct %}<span class="opt-hint">✓ correct</span>{% endif %}
+                    {% if 'd' == q.chosen and 'd' != q.correct %}<span class="opt-hint">your answer</span>{% endif %}
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Hide button -->
+        <div style="text-align:center; margin-top:1rem; margin-bottom:1rem;">
+            <button onclick="toggleBreakdown()" class="btn-ghost" style="font-size:13px; padding:9px 22px;">
+                <i class="ti ti-chevron-up"></i> Hide breakdown
+            </button>
+        </div>
+
+    </div>
+    <!-- end breakdown-wrap -->
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleBreakdown() {
+        const wrap = document.getElementById('breakdown-wrap');
+        const btn = document.getElementById('breakdown-btn');
+        const isHidden = wrap.style.display === 'none';
+
+        wrap.style.display = isHidden ? 'block' : 'none';
+        btn.innerHTML = isHidden
+            ? '<i class="ti ti-chevron-up"></i> Hide breakdown'
+            : '<i class="ti ti-list-details"></i> Show answer breakdown';
+
+        if (isHidden) {
+            setTimeout(() => {
+                wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
+</script>
 {% endblock %}
