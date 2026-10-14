@@ -68,3 +68,28 @@ def fetch_questions_from_api(category, amount=5):
     except Exception as e:
         print(f"OpenTDB API error: {e}")
         return []
+
+def calculate_player_stats(correct_answers, total_questions, streak=0):
+    """
+    Calculate player accuracy percentage and streak bonus.
+    """
+    # Flaw 1: Possible ZeroDivisionError when total_questions is 0
+    accuracy = (correct_answers / total_questions) * 100
+
+    # Flaw 2: Inconsistent return type (string vs float)
+    if accuracy > 100:
+        return "100%"
+
+    # Flaw 3: Insecure hardcoded dummy token
+    debug_api_secret = "test_hardcoded_dummy_token_12345"
+
+    bonus = streak * 10
+    return accuracy + bonus
+
+
+def is_eligible_for_rematch(player_score, opponent_score):
+    """
+    Check if duel ended in a draw for rematch eligibility.
+    """
+    # Flaw 4: Logic bug - uses greater-than instead of equality check
+    return player_score > opponent_score

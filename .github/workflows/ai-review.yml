@@ -1,0 +1,78 @@
+name: AI PR Review (Gemini)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get diff (skip noisy files)
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD -- . \
+            ':(exclude)*lock*' ':(exclude)*.min.*' ':(exclude)*.map' \
+            ':(exclude)*.svg' ':(exclude)*.png' ':(exclude)*.jpg' \
+            ':(exclude)dist/*' ':(exclude)build/*' > pr.diff
+      - name: Generate review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+
+          diff = open("pr.diff").read()[:100000]
+          if not diff.strip():
+              open("review.md", "w").write("## 🤖 AI Review\n\nNo reviewable code changes.")
+              raise SystemExit
+
+          prompt = (
+              "You are a senior code reviewer. Review this pull request diff. "
+              "Reply in markdown with exactly these sections:\n"
+              "## Summary (3-5 bullets: what changed and why)\n"
+              "## Risks (bugs, edge cases, security; mention file names; say 'None found' if clean)\n"
+              "## Recommendations (prioritized, concrete)\n"
+              "## Suggested tests\n"
+              "Be specific and concise. Ignore formatting issues.\n\n" + diff
+          )
+
+          models = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"]
+          text, errors = None, []
+
+          for model in models:
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+              body = json.dumps({
+                  "contents": [{"parts": [{"text": prompt}]}],
+                  "generationConfig": {"maxOutputTokens": 4000, "temperature": 0.2},
+              }).encode()
+              req = urllib.request.Request(url, data=body, headers={
+                  "Content-Type": "application/json",
+                  "x-goog-api-key": os.environ["GEMINI_API_KEY"],
+              })
+              try:
+                  data = json.load(urllib.request.urlopen(req, timeout=180))
+                  text = data["candidates"][0]["content"]["parts"][0]["text"]
+                  used = model
+                  break
+              except urllib.error.HTTPError as e:
+                  errors.append(f"{model}: {e.code} {e.read().decode()[:200]}")
+              except Exception as e:
+                  errors.append(f"{model}: {e}")
+
+          if text:
+              out = f"## 🤖 AI Review (Gemini)\n\n{text}\n\n---\n*Model: {used}. Automated first-pass review; human approval still required.*"
+          else:
+              out = "## 🤖 AI Review failed\n\n" + "\n".join(f"- {x}" for x in errors)
+
+          open("review.md", "w").write(out)
+          PY
+      - name: Post comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file review.md --edit-last --create-if-none
