@@ -14,12 +14,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Get diff (skip noisy files)
         run: |
           git diff origin/${{ github.base_ref }}...HEAD -- . \
-            ':(exclude)*lock*' ':(exclude)*.min.*' ':(exclude)*.map' \
+            ':(exclude)*.lock' ':(exclude)*-lock.json' ':(exclude)*-lock.yaml' ':(exclude)*lock.json' \
+            ':(exclude)*.min.*' ':(exclude)*.map' \
             ':(exclude)*.svg' ':(exclude)*.png' ':(exclude)*.jpg' \
             ':(exclude)dist/*' ':(exclude)build/*' > pr.diff
+
       - name: Generate review
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -27,29 +30,54 @@ jobs:
           python3 - <<'PY'
           import os, json, urllib.request, urllib.error
 
-          diff = open("pr.diff").read()[:100000]
-          if not diff.strip():
+          # ---------- 1. Load diff ----------
+          raw = open("pr.diff").read()
+          if not raw.strip():
               open("review.md", "w").write("## 🤖 AI Review\n\nNo reviewable code changes.")
               raise SystemExit
 
+          LIMIT = 300000
+          diff = raw[:LIMIT]
+          if len(raw) > LIMIT:
+              diff += "\n\n[NOTE: diff truncated. Later files were not included in this review.]"
+
+          # ---------- 2. Load project rules ----------
+          rules = ""
+          if os.path.exists(".github/review-rules.md"):
+              rules = open(".github/review-rules.md").read()[:5000]
+          if not rules.strip():
+              rules = "No project-specific rules. Use general clean-code best practices."
+
+          # ---------- 3. Build prompt ----------
           prompt = (
-              "You are a senior code reviewer. Review this pull request diff. "
-              "Reply in markdown with exactly these sections:\n"
-              "## Summary (3-5 bullets: what changed and why)\n"
-              "## Risks (bugs, edge cases, security; mention file names; say 'None found' if clean)\n"
-              "## Recommendations (prioritized, concrete)\n"
-              "## Suggested tests\n"
-              "Be specific and concise. Ignore formatting issues.\n\n" + diff
+              "You are a senior code reviewer. Review this pull request diff against clean-code standards and best practices.\n"
+              "Only comment on lines that were added or changed. Mention file names. Be specific and concise.\n"
+              "Label each finding with a severity: 🔴 Must fix, 🟡 Should fix, 🟢 Nice to have.\n\n"
+              "PROJECT RULES (apply strictly, and mention the rule when a change breaks it):\n"
+              + rules + "\n\n"
+              "Reply in markdown with exactly these sections:\n\n"
+              "## Summary\n3-5 bullets: what changed and why. If the diff says it was truncated, state that here.\n\n"
+              "## Bugs and risks\nLogic errors, edge cases (null, empty, large input), security, performance. Say 'None found' if clean.\n\n"
+              "## Clean code and standards\nNaming (clear, consistent, meaningful), function size and single responsibility, duplication, "
+              "deep nesting, magic numbers, dead or commented-out code, error handling, consistency with surrounding code, and any broken project rule.\n\n"
+              "## Spelling and wording\nTypos in identifiers, comments, strings, logs and docs. List each as: wrong -> correct (file).\n\n"
+              "## Comments and documentation\nComments should explain WHY, not WHAT. Flag outdated, misleading or useless comments, "
+              "and flag complex logic or public functions that need a comment or docstring. Note if README or API docs need updating.\n\n"
+              "## Tests\nMissing tests for new behavior, bug fixes or edge cases.\n\n"
+              "## Verdict\nOne line: Ready to merge / Needs changes / Needs discussion, and the main reason.\n\n"
+              "Ignore pure formatting that a linter would fix. Do not invent problems: if something is fine, say so.\n\n"
+              "DIFF:\n" + diff
           )
 
-          models = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"]
-          text, errors = None, []
+          # ---------- 4. Call Gemini (try models in order) ----------
+          models = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"]
+          text, errors, used = None, [], None
 
           for model in models:
               url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
               body = json.dumps({
                   "contents": [{"parts": [{"text": prompt}]}],
-                  "generationConfig": {"maxOutputTokens": 4000, "temperature": 0.2},
+                  "generationConfig": {"maxOutputTokens": 6000, "temperature": 0.2},
               }).encode()
               req = urllib.request.Request(url, data=body, headers={
                   "Content-Type": "application/json",
@@ -65,6 +93,7 @@ jobs:
               except Exception as e:
                   errors.append(f"{model}: {e}")
 
+          # ---------- 5. Write result ----------
           if text:
               out = f"## 🤖 AI Review (Gemini)\n\n{text}\n\n---\n*Model: {used}. Automated first-pass review; human approval still required.*"
           else:
@@ -72,6 +101,7 @@ jobs:
 
           open("review.md", "w").write(out)
           PY
+
       - name: Post comment
         env:
           GH_TOKEN: ${{ github.token }}

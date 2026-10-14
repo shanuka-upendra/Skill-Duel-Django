@@ -1,0 +1,11 @@
+- Follow the language's standard style guide (PEP 8 for Python, Airbnb or Standard for JavaScript/TypeScript)
+- Names must be clear and meaningful; no single-letter names except loop counters
+- Functions should be under 30 lines and do one thing
+- No magic numbers or strings; use named constants
+- No duplicated code; extract shared logic
+- No commented-out code or leftover debug statements (console.log, print)
+- Comments explain WHY, not WHAT; keep them in English and up to date
+- All public functions need a docstring or doc comment
+- Handle errors explicitly; never swallow exceptions silently
+- Never log or hardcode passwords, tokens, keys or personal data
+- New features and bug fixes need tests
