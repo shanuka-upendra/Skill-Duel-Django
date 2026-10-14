@@ -1,0 +1,51 @@
+name: AI PR Review (Gemini)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+      - name: Generate review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+
+          diff = open("pr.diff").read()[:150000]
+          prompt = ("Review this pull request diff. Reply in markdown with sections: "
+                    "## Summary (what changed), ## Risks, ## Recommendations, ## Suggested tests. "
+                    "Be specific and short.\n\n" + diff)
+
+          model = "gemini-2.5-flash"
+          url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+          body = json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode()
+          req = urllib.request.Request(url, data=body, headers={
+              "Content-Type": "application/json",
+              "x-goog-api-key": os.environ["GEMINI_API_KEY"],
+          })
+
+          try:
+              data = json.load(urllib.request.urlopen(req, timeout=120))
+              text = data["candidates"][0]["content"]["parts"][0]["text"]
+          except urllib.error.HTTPError as e:
+              text = "Review failed: " + e.read().decode()[:500]
+          except Exception as e:
+              text = "Review failed: " + str(e)
+
+          open("review.md", "w").write("## 🤖 AI Review (Gemini)\n\n" + text)
+          PY
+      - name: Post comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file review.md --edit-last --create-if-none
