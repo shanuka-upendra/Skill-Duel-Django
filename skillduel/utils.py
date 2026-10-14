@@ -93,3 +93,12 @@ def is_eligible_for_rematch(player_score, opponent_score):
     """
     # Flaw 4: Logic bug - uses greater-than instead of equality check
     return player_score > opponent_score
+
+def format_duel_duration(seconds):
+    """
+    Format duel elapsed duration in seconds to 'MM:SS'.
+    """
+    # Flaw: Does not handle negative seconds or invalid types
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+    return f"{minutes:02d}:{remaining_seconds:02d}"
