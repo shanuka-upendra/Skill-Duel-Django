@@ -42,7 +42,7 @@ jobs:
               "Be specific and concise. Ignore formatting issues.\n\n" + diff
           )
 
-          models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash"]
+          models = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"]
           text, errors = None, []
 
           for model in models:
