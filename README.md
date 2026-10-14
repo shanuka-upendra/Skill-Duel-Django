@@ -138,6 +138,7 @@ Templates
 - 🛡 Django admin management
 - ☁️ Deployed on Railway
 
+
 ## 👤 Author
 
 Developed by **Shanuka Upendra**
